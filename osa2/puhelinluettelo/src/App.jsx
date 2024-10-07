@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Person from './components/Person'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
-import axios from 'axios'
+import personsService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -10,10 +10,10 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
 
   useEffect(() => {
-  axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+  personsService
+      .getAll('http://localhost:3001/persons')
+      .then(initialPersons => {
+        setPersons(initialPersons)
       })
   },[])
 
@@ -21,7 +21,10 @@ const App = () => {
     event.preventDefault()
     if(persons.some(person => person.name === newName)){
       console.log("oli tää nimi")
-      window.alert(`${newName} is already added to phonebook`)
+      if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        updatePerson(newName, newNumber)
+        return
+      }
       return
     }
     const personObject = {
@@ -29,9 +32,23 @@ const App = () => {
       number: newNumber
     }
 
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
+    personsService
+      .create(personObject)
+      .then(returnedPersons => {
+        setPersons(persons.concat(returnedPersons))
+        setNewName('')
+        setNewNumber('')
+      })
+  }
+
+  const updatePerson = (newName, newNumber) => {
+    const person = persons.find(p => p.name === newName)
+    const changedPerson = { ...person, number: newNumber }
+    personsService
+      .update(person.id, changedPerson)
+      .then(returnedPerson => {
+        setPersons(persons.map(p => p.id !== person.id ? p : returnedPerson))
+      })
   }
 
   const handlePersonAdd = (event) => {
@@ -55,6 +72,16 @@ const App = () => {
   ? persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
   : persons
 
+  const handleDelete = (id) => {
+    console.log("lets handle delete " + id)
+    const person = persons.find(p => p.id === id)
+    if(window.confirm(`Delete ${person.name}`)){
+      personsService
+        .remove(id)
+      setPersons(persons.filter(p => p.id !== id));
+    }
+  }
+
   return (
     <div>
       debug: {newName}
@@ -64,7 +91,7 @@ const App = () => {
       <PersonForm addPerson={addPerson} newName={newName} handlePersonAdd={handlePersonAdd} newNumber={newNumber} handleNumberAdd={handleNumberAdd} />
       <h2>Numbers</h2>
       {personsToShow.map(person =>
-        <Person key={person.name} person={person} />
+        <Person key={person.name} person={person} handleDelete={handleDelete} />
       )}
     </div>
   )
