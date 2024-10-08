@@ -3,25 +3,27 @@ import Person from './components/Person'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import personsService from './services/persons'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [message, setMessage] = useState(null)
 
   useEffect(() => {
-  personsService
-      .getAll('http://localhost:3001/persons')
+    personsService
+      .getAll()
       .then(initialPersons => {
         setPersons(initialPersons)
       })
-  },[])
+  }, [])
 
   const addPerson = (event) => {
     event.preventDefault()
-    if(persons.some(person => person.name === newName)){
+    if (persons.some(person => person.name === newName)) {
       console.log("oli tää nimi")
-      if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
         updatePerson(newName, newNumber)
         return
       }
@@ -38,6 +40,13 @@ const App = () => {
         setPersons(persons.concat(returnedPersons))
         setNewName('')
         setNewNumber('')
+
+        setMessage(`Added ${newName}`)
+        console.log(message)
+        setTimeout(() => {
+          setMessage(null)
+        }, 3000)
+
       })
   }
 
@@ -48,7 +57,25 @@ const App = () => {
       .update(person.id, changedPerson)
       .then(returnedPerson => {
         setPersons(persons.map(p => p.id !== person.id ? p : returnedPerson))
-      })
+        setNewName('')
+        setNewNumber('')
+
+        setMessage(`Updated ${newName}`)
+        console.log(message)
+        setTimeout(() => {
+          setMessage(null)
+          }, 3000)
+        })
+        .catch(error => {
+          setMessage(`Information of ${newName} has already been removed from server`)
+          console.log(message)
+          setTimeout(() => {
+            setMessage(null)
+          }, 3000)
+          setPersons(persons.filter(p => p.id !== person.id))
+          setNewName('')
+          setNewNumber('')
+        })
   }
 
   const handlePersonAdd = (event) => {
@@ -69,16 +96,22 @@ const App = () => {
   }
 
   const personsToShow = filter
-  ? persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
-  : persons
+    ? persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
+    : persons
 
   const handleDelete = (id) => {
-    console.log("lets handle delete " + id)
+    console.log("delete " + id)
     const person = persons.find(p => p.id === id)
-    if(window.confirm(`Delete ${person.name}`)){
+    if (window.confirm(`Delete ${person.name}`)) {
+      setMessage(`Deleted ${person.name}`)
       personsService
         .remove(id)
-      setPersons(persons.filter(p => p.id !== id));
+        setPersons(persons.filter(p => p.id !== id));
+        
+        console.log(message)
+        setTimeout(() => {
+          setMessage(null)
+        }, 3000)
     }
   }
 
@@ -86,6 +119,7 @@ const App = () => {
     <div>
       debug: {newName}
       <h1>Phonebook</h1>
+      <Notification message={message} />
       <Filter filter={filter} handleFilterChange={handleFilter} />
       <h2>Add a new</h2>
       <PersonForm addPerson={addPerson} newName={newName} handlePersonAdd={handlePersonAdd} newNumber={newNumber} handleNumberAdd={handleNumberAdd} />
