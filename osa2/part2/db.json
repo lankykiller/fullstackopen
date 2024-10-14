@@ -18,17 +18,17 @@
     {
       "id": "aac2",
       "content": "Drocker fundamentals",
-      "important": true
+      "important": false
     },
     {
       "id": "be16",
       "content": "Azure abc",
-      "important": false
+      "important": true
     },
     {
       "id": "2bbd",
       "content": "som code",
-      "important": false
+      "important": true
     }
   ]
 }
