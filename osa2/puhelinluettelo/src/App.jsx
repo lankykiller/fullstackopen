@@ -46,8 +46,13 @@ const App = () => {
         setTimeout(() => {
           setMessage(null)
         }, 3000)
-
       })
+      .catch(error => 
+        {
+          setMessage(`Error: ${error.response.data.error}`)
+          console.log(error.response.data.error)
+        })
+          
   }
 
   const updatePerson = (newName, newNumber) => {
@@ -68,7 +73,7 @@ const App = () => {
         })
         .catch(error => {
           setMessage(`Information of ${newName} has already been removed from server`)
-          console.log(message)
+          console.log(message, error.data)
           setTimeout(() => {
             setMessage(null)
           }, 3000)

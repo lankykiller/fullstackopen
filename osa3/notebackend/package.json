@@ -7,7 +7,8 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rd /s /q C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa3\\notebackend\\dist && cd C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa2\\part2 && npm run build && xcopy /E C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa2\\part2\\dist C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa3\\notebackend\\dist",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
+  "lint": "eslint ."
   },
   "author": "\"Daniel\"",
   "license": "ISC",
@@ -19,6 +20,11 @@
     "mongoose": "^8.8.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@stylistic/eslint-plugin-js": "^4.4.1",
+    "eslint": "^9.35.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.4.0",
     "nodemon": "^3.1.7"
   }
 }
