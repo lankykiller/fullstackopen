@@ -8,14 +8,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rd /s /q C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa3\\notebackend\\dist && cd C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa2\\part2 && npm run build && xcopy /E C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa2\\part2\\dist C:\\Users\\Käyttäjä\\Desktop\\fullstack\\fullstackopen\\osa3\\notebackend\\dist",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
-  "lint": "eslint ."
+    "lint": "eslint ."
   },
   "author": "\"Daniel\"",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "mongoose": "^8.8.1"
   },
