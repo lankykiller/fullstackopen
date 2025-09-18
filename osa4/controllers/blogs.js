@@ -1,68 +1,68 @@
-const blogsRouter = require('express').Router()
-const Blog = require('../models/blog')
+const blogsRouter = require("express").Router();
+const Blog = require("../models/blog");
 
-blogsRouter.get('/', (request, response) => {
-  Blog.find({}).then(blogs => {
-    response.json(blogs)
-  })
-})
+blogsRouter.get("/", async (request, response) => {
+  const blogs = await Blog.find({});
+  response.json(blogs);
+});
 
-blogsRouter.get('/:id', (request, response, next) => {
+blogsRouter.get("/:id", (request, response, next) => {
   Blog.findById(request.params.id)
-    .then(blog => {
+    .then((blog) => {
       if (blog) {
-        response.json(blog)
+        response.json(blog);
       } else {
-        response.status(404).end()
+        response.status(404).end();
       }
     })
-    .catch(error => next(error))
-})
+    .catch((error) => next(error));
+});
 
-blogsRouter.post('/', (request, response, next) => {
-  const body = request.body
+blogsRouter.post("/", async (request, response) => {
+  const body = request.body;
+
+  if (!body.title || !body.url) {
+    return response.status(400).json({ error: "title and url are required" });
+  }
 
   const blog = new Blog({
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes || 0,
-  })
+  });
 
-  blog.save()
-    .then(savedBlog => {
-      response.status(201).json(savedBlog)
-    })
-    .catch(error => next(error))
-})
+  const newBlog = await blog.save();
+  response.status(201).json(newBlog);
+});
 
-blogsRouter.delete('/:id', (request, response, next) => {
+blogsRouter.delete("/:id", (request, response, next) => {
   Blog.findByIdAndDelete(request.params.id)
     .then(() => {
-      response.status(204).end()
+      response.status(204).end();
     })
-    .catch(error => next(error))
-})
+    .catch((error) => next(error));
+});
 
-blogsRouter.put('/:id', (request, response, next) => {
-  const { title, author, url, likes } = request.body
+blogsRouter.put("/:id", (request, response, next) => {
+  const { title, author, url, likes } = request.body;
 
   Blog.findById(request.params.id)
-    .then(blog => {
+    .then((blog) => {
       if (!blog) {
-        return response.status(404).end()
+        return response.status(404).end();
       }
 
-      blog.title = title
-      blog.author = author
-      blog.url = url
-      blog.likes = likes
+      blog.title = title;
+      blog.author = author;
+      blog.url = url;
+      blog.likes = likes;
 
       return blog.save().then((updatedBlog) => {
-        response.json(updatedBlog)
-      })
+        response.json(updatedBlog);
+      });
     })
-    .catch(error => next(error))
-})
+    .catch((error) => next(error));
+});
 
-module.exports = blogsRouter
+module.exports = blogsRouter;
