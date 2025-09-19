@@ -102,6 +102,42 @@ await api
 
 })
 
+test('deletion of a blog', async() => {
+
+const blogsAtStart = await helper.blogsInDb()
+const blogToDelete =blogsAtStart[0]
+
+await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+const blogsAtEnd = await helper.blogsInDb()
+
+assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+
+const titles = blogsAtEnd.map(b => b.title)
+assert(!titles.includes(blogToDelete.title))
+
+})
+
+test('updating a blog', async() => {
+
+const blogsAtStart = await helper.blogsInDb()
+const blogToUpdate = blogsAtStart[0]
+
+const updatedBlogData = {
+    title: blogToUpdate.title,
+    author: blogToUpdate.author,
+    url: blogToUpdate.url,
+    likes: blogToUpdate.likes + 10
+}
+
+const response = await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(updatedBlogData)
+    .expect(200)
+
+assert.strictEqual(response.body.likes, blogToUpdate.likes + 10)
+
+})
 
 
 after(async () => {
