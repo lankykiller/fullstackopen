@@ -1,20 +1,20 @@
-import { useState, useEffect} from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
 import './index.css'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
-  const [successMessage, setSuccessMessage] = useState(null)
+  const [successMessage] = useState(null)
+  const blogFromRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -35,14 +35,12 @@ const App = () => {
 
   }, [])
 
-
   const handleLogin = async event => {
     event.preventDefault()
 
     try {
       const user = await loginService.login({ username, password })
-
-        window.localStorage.setItem(
+      window.localStorage.setItem(
         'loggedBlogappUser', JSON.stringify(user)
       )
       blogService.setToken(user.token)
@@ -63,63 +61,24 @@ const App = () => {
     setUser(null)
   }
 
-  const handleAddBlog = async (event) => {
-    event.preventDefault()
-    const blogObject = {
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl,
-    }
+  const addBlog = (blogObject) => {
+    blogFromRef.current.toggleVisibility()
 
-    try {
-      const returnedBlog = await blogService.create(blogObject)
-      setBlogs(blogs.concat(returnedBlog))
-      
-      setSuccessMessage(`a new blog ${newTitle} by ${newAuthor} added`)
-      setTimeout(() => {
-        setSuccessMessage(null)
-      }, 5000)
-      setNewTitle('')
-      setNewAuthor('')
-      setNewUrl('')
-    } catch (error) {
-      console.error('creating blog failed', error)
-    }
+    blogService
+      .create(blogObject)
+      .then(returnedBlog => {
+        setBlogs(blogs.concat(returnedBlog))
+      })
   }
 
-  const blogForm = () => (
-    <form onSubmit={handleAddBlog}>
-      <div>
-        title:
-        <input
-          type="text"
-          value={newTitle}
-          name="Title"
-          onChange={({ target }) => setNewTitle(target.value)}
-        />
-      </div>
-        author:
-        <input
-          type="text"
-          value={newAuthor}
-          name="Author"
-          onChange={({ target }) => setNewAuthor(target.value)}
-        />
-      <div>
-        url:
-        <input
-          type="text"
-          value={newUrl}
-          name="Url"
-          onChange={({ target }) => setNewUrl(target.value)}
-        />
-      </div>
-      <button type="submit">create</button>
-    </form>
-  )
-    
-    
-
+  const handleDeleteBlog = async (id) => {
+    try {
+      await blogService.deleteBlog(id)
+      setBlogs(prev => prev.filter(b => b.id !== id))
+    } catch (error) {
+      console.error('delete failed', error)
+    }
+  }
 
   const loginForm = () => (
     <form onSubmit={handleLogin}>
@@ -155,20 +114,17 @@ const App = () => {
         {loginForm()}
       </div>
     )
-    
+
   } else {
     return (
       <div>
         <Notification message={successMessage} type="success" />
-        <h2>create blog</h2>
-        {blogForm()}
         <h2>blogs</h2>
         <p>
           {user.name} logged in <button onClick={logoutButton}>logout</button>
-        </p>
-        
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+        </p><Togglable buttonLabel="new Blog" ref = {blogFromRef}><BlogForm createBlog={addBlog}/></Togglable>
+        {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
+          <Blog key={blog.id} blog={blog} user={user} onDelete={handleDeleteBlog} />
         )}
       </div>
     )
