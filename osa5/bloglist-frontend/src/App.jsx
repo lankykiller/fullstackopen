@@ -56,6 +56,20 @@ const App = () => {
     }
   }
 
+  const handleLike = async (id) => {
+  try {
+    const blogToUpdate = blogs.find(b => b.id === id)
+    const updatedBlog = {
+      ...blogToUpdate,
+      likes: blogToUpdate.likes + 1
+    }
+    const returnedBlog = await blogService.update(id, updatedBlog)
+    setBlogs(blogs.map(blog => blog.id === id ? returnedBlog : blog))
+  } catch (error) {
+    console.error('like failed', error)
+  }
+}
+
   const logoutButton = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     setUser(null)
@@ -124,7 +138,7 @@ const App = () => {
           {user.name} logged in <button onClick={logoutButton}>logout</button>
         </p><Togglable buttonLabel="new Blog" ref = {blogFromRef}><BlogForm createBlog={addBlog}/></Togglable>
         {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
-          <Blog key={blog.id} blog={blog} user={user} onDelete={handleDeleteBlog} />
+          <Blog key={blog.id} blog={blog} user={user} onDelete={handleDeleteBlog} handleLike={handleLike} />
         )}
       </div>
     )
