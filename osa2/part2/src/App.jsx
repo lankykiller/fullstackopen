@@ -15,6 +15,7 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+
   const noteFormRef = useRef()
 
   useEffect(() => {
@@ -32,12 +33,11 @@ const App = () => {
     }
   }, [])
 
-  const addNote = (noteObject) => {
-    noteService
-      .create(noteObject)
-      .then(returnedNote => {
-        setNotes(notes.concat(returnedNote))
-      })
+  const addNote = noteObject => {
+    noteFormRef.current.toggleVisibility()
+    noteService.create(noteObject).then(returnedNote => {
+      setNotes(notes.concat(returnedNote))
+    })
   }
 
   const toggleImportanceOf = id => {
@@ -102,11 +102,9 @@ const App = () => {
       {user && (
         <div>
           <p>{user.name} logged in</p>
-
           <Togglable buttonLabel="new note" ref={noteFormRef}>
             <NoteForm createNote={addNote} />
           </Togglable>
-
         </div>
       )}
 
